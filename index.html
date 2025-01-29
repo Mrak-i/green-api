@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREEN-API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 800px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .left-side {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .right-side {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="left-side">
+        <h2>Параметры подключения</h2>
+        <label for="idInstance">ID Инстанса:</label>
+        <input type="text" id="idInstance" placeholder="Введите ID Инстанса">
+        
+        <label for="apiTokenInstance">Api Token Instance:</label>
+        <!-- Поле ввода скрытого типа -->
+        <input type="password" id="apiTokenInstance" placeholder="Введите Api Token Instance">
+        
+        <button onclick="getSettings()">getSettings</button>
+        <button onclick="getStateInstance()">getStateInstance</button>
+        
+        <h2>Отправка сообщения</h2>
+        <label for="chatId">Номер чата:</label>
+        <input type="text" id="chatId" placeholder="Введите номер чата (без @c.us/@g.us)">
+        <label for="messageText">Текст сообщения:</label>
+        <textarea id="messageText" rows="4" maxlength="20000" placeholder="Введите текст сообщения..."></textarea>
+        <button onclick="sendMessage()">sendMessage</button>
+        
+        <h2>Отправка файла</h2>
+        <label for="chatIdFile">Номер чата:</label>
+        <input type="text" id="chatIdFile" placeholder="Введите номер чата (без @c.us/@g.us)">
+        <label for="fileUrl">URL файла:</label>
+        <input type="text" id="fileUrl" placeholder="Введите URL файла">
+        <button onclick="sendFileByUrl()">sendFileByUrl</button>
+    </div>
+    
+    <div class="right-side">
+        <h2>Ответ метода</h2>
+        <pre id="response"></pre>
+    </div>
+</div>
+<script>
+    const responseElement = document.getElementById('response');
+
+    function setResponse(data) {
+        responseElement.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function getSettings() {
+        const idInstance = document.getElementById('idInstance').value;
+        const apiTokenInstance = document.getElementById('apiTokenInstance').value;
+
+        if (!idInstance || !apiTokenInstance) {
+            alert('Пожалуйста, введите ID Инстанса и Api Token Instance.');
+            return;
+        }
+
+        try {
+            const url = `https://1103.api.green-api.com/waInstance${idInstance}/getSettings/${apiTokenInstance}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            setResponse(data);
+        } catch (error) {
+            console.error(error);
+            setResponse({ error: 'Ошибка при получении настроек.' });
+        }
+    }
+
+    async function getStateInstance() {
+        const idInstance = document.getElementById('idInstance').value;
+        const apiTokenInstance = document.getElementById('apiTokenInstance').value;
+
+        if (!idInstance || !apiTokenInstance) {
+            alert('Пожалуйста, введите ID Инстанса и Api Token Instance.');
+            return;
+        }
+
+        try {
+            const url = `https://1103.api.green-api.com/waInstance${idInstance}/getStateInstance/${apiTokenInstance}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            setResponse(data);
+        } catch (error) {
+            console.error(error);
+            setResponse({ error: 'Ошибка при получении состояния инстанса.' });
+        }
+    }
+
+    async function sendMessage() {
+        const idInstance = document.getElementById('idInstance').value;
+        const apiTokenInstance = document.getElementById('apiTokenInstance').value;
+        const chatIdRaw = document.getElementById('chatId').value;
+        const message = document.getElementById('messageText').value;
+
+        if (!idInstance || !apiTokenInstance || !chatIdRaw || !message) {
+            alert('Пожалуйста, заполните все поля.');
+            return;
+        }
+
+        let chatId;
+        if (chatIdRaw.includes('@')) { // Если уже есть суффикс, оставляем как есть
+            chatId = chatIdRaw;
+        } else if (chatIdRaw.length === 12) { // Предположим, что это групповой чат
+            chatId = `${chatIdRaw}@g.us`;
+        } else { // Личный чат
+            chatId = `${chatIdRaw}@c.us`;
+        }
+
+        try {
+            const url = `https://1103.api.green-api.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: chatId,
+                    message: message
+                })
+            });
+            const data = await response.json();
+            setResponse(data);
+        } catch (error) {
+            console.error(error);
+            setResponse({ error: 'Ошибка при отправке сообщения.' });
+        }
+    }
+
+    async function sendFileByUrl() {
+        const idInstance = document.getElementById('idInstance').value;
+        const apiTokenInstance = document.getElementById('apiTokenInstance').value;
+        const chatIdRaw = document.getElementById('chatIdFile').value;
+        const fileUrl = document.getElementById('fileUrl').value;
+
+        if (!idInstance || !apiTokenInstance || !chatIdRaw || !fileUrl) {
+            alert('Пожалуйста, заполните все поля.');
+            return;
+        }
+
+        let chatId;
+        if (chatIdRaw.includes('@')) { // Если уже есть суффикс, оставляем как есть
+            chatId = chatIdRaw;
+        } else if (chatIdRaw.length === 12) { // Предположим, что это групповой чат
+            chatId = `${chatIdRaw}@g.us`;
+        } else { // Личный чат
+            chatId = `${chatIdRaw}@c.us`;
+        }
+
+        try {
+            const url = `https://1103.api.green-api.com/waInstance${idInstance}/sendFileByUrl/${apiTokenInstance}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chatId: chatId,
+                    urlFile: fileUrl,
+                    fileName: 'filename', // Замените на имя файла
+                    caption: 'Описание файла' // Замените на описание файла
+                })
+            });
+            const data = await response.json();
+            setResponse(data);
+        } catch (error) {
+            console.error(error);
+            setResponse({ error: 'Ошибка при отправке файла.' });
+        }
+    }
+</script>
+</body>
+</html>
