@@ -1,14 +1,6 @@
 # Используем официальный образ Nginx
 FROM nginx:alpine
 
-# Переменные для передачи при сборке
-ARG PRIVATE_KEY
-ARG CERTIFICATE
-
-# Переменные среды
-ENV PRIVATE_KEY=${PRIVATE_KEY}
-ENV CERTIFICATE=${CERTIFICATE}
-
 # Создаём директорию
 RUN mkdir -p /etc/nginx/certs
 
@@ -19,8 +11,10 @@ RUN addgroup -g 1000 nonroot && adduser -u 1000 -G nonroot -D -H -s /bin/sh nonr
 RUN chown -R nonroot:nonroot /usr/share/nginx/html /etc/nginx/conf.d /etc/nginx/certs
 
 # Генерируем самоподписанный сертификат
-RUN echo "$PRIVATE_KEY" > /etc/nginx/certs/server.key && \
-    echo "$CERTIFICATE" > /etc/nginx/certs/server.crt
+RUN --mount=type=secret,id=private_key \
+    --mount=type=secret,id=certificate \
+    sh -c 'cat /run/secrets/private_key > /etc/nginx/certs/server.key && \
+          cat /run/secrets/certificate > /etc/nginx/certs/server.crt'
 
 # Копируем содержимое проекта в корень веб-сервера Nginx
 COPY ./ /usr/share/nginx/html
