@@ -35,9 +35,9 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ steps.lowercase.outputs.lowercase_actor }}/green-api:latest
-          secrets: |
-            private_key=${{ secrets.PRIVATE_KEY }}
-            certificate=${{ secrets.CERTIFICATE }}
+          build-args: |
+            CERTIFICATE=${{ secrets.CERTIFICATE }}
+            PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}
 
       - name: Log out of the GitHub Container Registry
         if: ${{ steps.build.outputs.image_id }}
