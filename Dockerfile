@@ -11,7 +11,8 @@ RUN addgroup -g 1000 nonroot && adduser -u 1000 -G nonroot -D -H -s /bin/sh nonr
 RUN chown -R nonroot:nonroot /usr/share/nginx/html /etc/nginx/conf.d /etc/nginx/certs
 
 # Генерируем самоподписанный сертификат
-RUN --mount=type=secret,id=private_key && --mount=type=secret,id=certificate && cat /run/secrets/private_key > /etc/nginx/certs/server.key && cat /run/secrets/certificate > /etc/nginx/certs/server.crt
+RUN --mount=type=secret,id=private_key,env=PRIVATE_KEY && --mount=type=secret,id=certificate,env=CERTIFICATE
+RUN cat /run/secrets/private_key > /etc/nginx/certs/server.key && cat /run/secrets/certificate > /etc/nginx/certs/server.crt
 
 # Копируем содержимое проекта в корень веб-сервера Nginx
 COPY ./ /usr/share/nginx/html
