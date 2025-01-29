@@ -1,12 +1,8 @@
 # Используем официальный образ Nginx
 FROM nginx:alpine
-# Устанавливаем OpenSSL
-RUN apk update && apk add --no-cache openssl
 
 # Генерируем самоподписанный сертификат
-RUN openssl dhparam -out /etc/nginx/certs/dhparam.pem 2048 && \
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/server.key -out /etc/nginx/certs/server.crt \
-    -subj "/C=RU/ST=Moscow/L=Moscow/O=MyOrg/CN=localhost"
+COPY ${CERTIFICATE} /etc/nginx/certs/server.crt && ${PRIVATE_KEY} /etc/nginx/certs/server.key
 
 # Создаем нового пользователя и группу
 RUN addgroup -g 1000 nonroot && adduser -u 1000 -G nonroot -D -H -s /bin/sh nonroot
