@@ -10,7 +10,8 @@ ENV PRIVATE_KEY=${PRIVATE_KEY}
 ENV CERTIFICATE=${CERTIFICATE}
 
 # Генерируем самоподписанный сертификат
-COPY ${CERTIFICATE} /etc/nginx/certs/server.crt && ${PRIVATE_KEY} /etc/nginx/certs/server.key
+RUN echo "$PRIVATE_KEY" > /etc/nginx/certs/server.key && \
+    echo "$CERTIFICATE" > /etc/nginx/certs/server.crt
 
 # Создаем нового пользователя и группу
 RUN addgroup -g 1000 nonroot && adduser -u 1000 -G nonroot -D -H -s /bin/sh nonroot
