@@ -1,6 +1,14 @@
 # Используем официальный образ Nginx
 FROM nginx:alpine
 
+# Переменные для передачи при сборке
+ARG PRIVATE_KEY
+ARG CERTIFICATE
+
+# Переменные среды
+ENV PRIVATE_KEY=${PRIVATE_KEY}
+ENV CERTIFICATE=${CERTIFICATE}
+
 # Генерируем самоподписанный сертификат
 COPY ${CERTIFICATE} /etc/nginx/certs/server.crt && ${PRIVATE_KEY} /etc/nginx/certs/server.key
 
