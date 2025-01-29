@@ -9,15 +9,18 @@ ARG CERTIFICATE
 ENV PRIVATE_KEY=${PRIVATE_KEY}
 ENV CERTIFICATE=${CERTIFICATE}
 
-# Генерируем самоподписанный сертификат
-RUN echo "$PRIVATE_KEY" > /etc/nginx/certs/server.key && \
-    echo "$CERTIFICATE" > /etc/nginx/certs/server.crt
+# Создаём директорию
+RUN mkdir -p /etc/nginx/certs
 
 # Создаем нового пользователя и группу
 RUN addgroup -g 1000 nonroot && adduser -u 1000 -G nonroot -D -H -s /bin/sh nonroot
 
 # Меняем владельца директорий на нового пользователя
 RUN chown -R nonroot:nonroot /usr/share/nginx/html /etc/nginx/conf.d /etc/nginx/certs
+
+# Генерируем самоподписанный сертификат
+RUN echo "$PRIVATE_KEY" > /etc/nginx/certs/server.key && \
+    echo "$CERTIFICATE" > /etc/nginx/certs/server.crt
 
 # Копируем содержимое проекта в корень веб-сервера Nginx
 COPY ./ /usr/share/nginx/html
