@@ -1,8 +1,7 @@
 # Используем официальный образ Nginx
 FROM nginx:alpine
-
 # Устанавливаем OpenSSL
-RUN apt-get update && apt-get install -y openssl
+RUN apk update && apk add --no-cache openssl
 
 # Генерируем самоподписанный сертификат
 RUN openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/certs/server.key -x509 -days 365 -out /etc/nginx/certs/server.crt -subj "/C=RU/ST=Moscow/L=Moscow/O=MyOrg/CN=localhost"
