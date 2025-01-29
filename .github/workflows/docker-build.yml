@@ -40,6 +40,9 @@ jobs:
           tags: |
             latest
             ${{ github.event.repository.release.tag_name }}
+          build-args: |
+            PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}
+            CERTIFICATE=${{ secrets.CERTIFICATE }}
 
       - name: Log out of the GitHub Container Registry
         if: ${{ steps.build.outputs.image_id }}
