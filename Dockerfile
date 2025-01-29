@@ -4,7 +4,9 @@ FROM nginx:alpine
 RUN apk update && apk add --no-cache openssl
 
 # Генерируем самоподписанный сертификат
-RUN openssl req -newkey rsa:2048 -nodes -keyout /etc/nginx/certs/server.key -x509 -days 365 -out /etc/nginx/certs/server.crt -subj "/C=RU/ST=Moscow/L=Moscow/O=MyOrg/CN=localhost"
+RUN openssl dhparam -out /etc/nginx/certs/dhparam.pem 2048 && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/certs/server.key -out /etc/nginx/certs/server.crt \
+    -subj "/C=RU/ST=Moscow/L=Moscow/O=MyOrg/CN=localhost"
 
 # Создаем нового пользователя и группу
 RUN addgroup -g 1000 nonroot && adduser -u 1000 -G nonroot -D -H -s /bin/sh nonroot
